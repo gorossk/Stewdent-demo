@@ -1,14 +1,19 @@
 # Stewdent 体験デモ
 
-**[体験デモを開く](https://gorossk.github.io/Stewdent-demo/)**
+[体験デモを開く](https://gorossk.github.io/Stewdent-demo/)
 
-架空データだけで、教材設定・演習・チェック提出・教師の手動レビュー・結果公開・チューター記録を試せます。
+生徒が先生役になって「生徒AIに教える」アプリの体験版です。教師は説明と対話を読んで理解を確認します。
 
-入力はこのタブのメモリだけで保持し、再読み込みでリセットします。実学校データを入力しないでください。AI、実認証、学校DBには接続しません。正式な試験・評定には使えません。
+- トップの「生徒AIに教えてみる」から、課題設定なしで開始できます。
+- 教えるテーマを決め、AIの聞き返しに答えながら説明します。
+- 教師画面で最初と最後の説明、対話の全文を確認し、発言を根拠に所見を追記できます。
+- 教師として開くと架空の対話例も読めます。自分の入力を教師として見るには、同じタブで役割を切り替えてください。
+- チェック・教師による採点レビュー・結果公開・チューター記録は補助機能として使えます。
 
-Web配信ファイルは静的なHTML/CSS/JavaScriptとrobots.txt/.nojekyllです。公開URLを確認するGitHub Actionsのブラウザ試験も含みます。APIキー、サーバーコード、SQL、学校DB、非公開の正答キーは含みません。
+すべて架空データです。入力はタブ内メモリだけに保持し、再読み込みで消えます。実際の氏名や学校情報は入力しないでください。
 
-初回公開: Settings → Pages → Deploy from a branch → main / (root) → Save。サイトはURLを知る人が閲覧できます。noindex指定はアクセス制限ではありません。
+AI応答は固定質問と入力引用による役割シミュレーションです。OpenAI APIを呼ばず、トークン消費・API課金は発生しません。実認証・永続DBには接続しません。役割切替は操作デモであり、本物の認証やRLSではありません。実際の試験・評定には使えません。
 
-公開URLのHTTP200、教師/生徒/Check/レビュー/公開/チューターの操作、375px表示、API要求0をブラウザで確認済みです。
-検証記録: https://github.com/gorossk/Stewdent-demo/actions/runs/41423754330
+このリポジトリは公開用の静的ファイルとブラウザ検証だけです。APIキー・SQL・学校DB・非公開の模範回答は含みません。`connect-src 'none'`、noindex、robots.txtを設定しています。URLを知る人が閲覧でき、noindexはアクセス制限ではありません。
+
+GitHub Pages: main / (root)。[公開URLの操作検証](https://github.com/gorossk/Stewdent-demo/actions/workflows/verify-demo.yml)で教える→教師所見→Check→レビュー→公開、375px、API要求0を確認します。スクリーンショットとresult.jsonはActions artifactに保存します。

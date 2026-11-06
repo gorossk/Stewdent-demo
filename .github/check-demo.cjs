@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- Standalone CommonJS checker loads Playwright from CHECK_DIR in GitHub Actions. */
-// Deployed copy pins /Stewdent-demo/assets/index-C5rrGwV6.js to the exact built JS path before publication.
+// Deployed copy pins /Stewdent-demo/assets/index-C3gAcoRt.js to the exact built JS path before publication.
 const { chromium, expect } = require(
   process.env.CHECK_DIR + "/node_modules/@playwright/test",
 );
 const fs = require("node:fs/promises");
 (async () => {
   const url = process.env.SITE_URL,
-    expectedAsset = process.env.EXPECTED_ASSET || "/Stewdent-demo/assets/index-C5rrGwV6.js";
+    expectedAsset = process.env.EXPECTED_ASSET || "/Stewdent-demo/assets/index-C3gAcoRt.js";
   let ready = false;
   for (let n = 0; n < 60; n++) {
     try {
@@ -61,57 +61,73 @@ const fs = require("node:fs/promises");
       await expect(page.locator(".student-app,.app-frame")).toBeVisible();
     }
     await page.getByRole("button", { name: "生徒AIに教えてみる" }).click();
-    await page.getByRole("button", { name: "例を入れて試す" }).click();
-    await page
-      .getByLabel("教えるテーマ", { exact: true })
-      .fill("公開確認・江戸幕府");
+    await page.getByRole("button", { name: "会話例を入力する" }).click();
+    await page.getByRole("button", { name: "送信", exact: true }).click();
+    await expect(page.locator(".chat-turn.assistant").last()).toContainText(
+      "どことどこを行き来",
+    );
+    const conversationPath = await page.evaluate(() => location.hash);
     await page.evaluate(async () => {
       await document.fonts.ready;
     });
     if (
       !(await page.evaluate(() => document.fonts.check('16px "Stewdent Maru"')))
     )
-      throw new Error("Bundled rounded font was not loaded");
+      throw new Error("Bundled rounded font missing");
     await page.screenshot({
-      path: "site-evidence/studio-teach.png",
-      fullPage: true,
-    });
-    await page.getByRole("button", { name: "教えて、AIのテストへ" }).click();
-    await expect(page.locator(".ai-test-answer")).toHaveCount(3);
-    await expect(page.locator(".ai-test-answer.not_observed")).toHaveCount(1);
-    await expect(
-      page.getByText("10 XP · あと20 XPでレベルアップ", { exact: true }),
-    ).toBeVisible();
-    await page.getByRole("button", { name: "ふりかえりを見る" }).click();
-    await expect(page.locator(".keyword-list.warm")).toContainText("参勤交代");
-    await page.screenshot({
-      path: "site-evidence/studio-reflect.png",
+      path: "site-evidence/conversation.png",
       fullPage: true,
     });
     await page
-      .getByRole("link", { name: "もう一度教える", exact: false })
+      .getByRole("button", {
+        name: "レモンにテストを受けてもらう",
+        exact: true,
+      })
       .click();
-    await page
-      .getByLabel("教えたいこと", { exact: true })
-      .fill(
-        "江戸幕府は1603年に徳川家康が開いた幕府です。参勤交代は、大名が江戸と自分の領地を行き来する制度です。",
+    await expect(page.locator(".ai-test-answer.observed")).toHaveCount(1);
+    await expect(page.locator(".ai-test-answer.not_observed")).toHaveCount(2);
+    await expect(page.getByText("Lv.1 · 10 XP", { exact: true })).toBeVisible();
+    await page.screenshot({
+      path: "site-evidence/conversation-test.png",
+      fullPage: true,
+    });
+    await page.getByRole("button", { name: "この会話で教え直す" }).click();
+    for (const body of [
+      "参勤交代は、大名が江戸と自分の領地を行き来する制度です。",
+      "大名に移動などの費用を負担させ、経済的な力を弱めるためです。",
+    ]) {
+      await page.getByLabel("レモンに教えるメッセージ").fill(body);
+      await page.getByRole("button", { name: "送信", exact: true }).click();
+      await expect(
+        page.getByRole("button", { name: "送信", exact: true }),
+      ).toBeVisible();
+      await expect(page.locator(".chat-turn.student").last()).toContainText(
+        body,
       );
-    await page.getByRole("button", { name: "教えて、AIのテストへ" }).click();
+    }
+    await page
+      .getByRole("button", {
+        name: "レモンにテストを受けてもらう",
+        exact: true,
+      })
+      .click();
     await expect(page.locator(".ai-test-answer.observed")).toHaveCount(3);
-    await expect(
-      page.getByText("20 XP · あと10 XPでレベルアップ", { exact: true }),
-    ).toBeVisible();
-    await nav("/app/history");
-    await page.getByRole("link", { name: "記録を見る" }).first().click();
-    await expect(
-      page.getByText("20 XP · あと10 XPでレベルアップ", { exact: true }),
-    ).toBeVisible();
+    if ((await page.evaluate(() => location.hash)) !== conversationPath)
+      throw new Error("Teaching again must keep the same conversation");
+    await page.getByLabel("テストの履歴").selectOption("1");
+    await expect(page.locator(".ai-test-answer.not_observed")).toHaveCount(2);
+    await page.getByLabel("テストの履歴").selectOption("2");
+    await expect(page.locator(".ai-test-answer.observed")).toHaveCount(3);
+    await page
+      .getByRole("button", { name: "今の会話の結果を見る", exact: true })
+      .click();
+    await expect(page.getByText("Lv.1 · 20 XP", { exact: true })).toBeVisible();
     await login("教師");
     const summary = page
       .locator(".teaching-summary")
       .filter({
         has: page.getByRole("heading", {
-          name: "公開確認・江戸幕府",
+          name: "江戸幕府",
           exact: true,
         }),
       })
@@ -121,7 +137,7 @@ const fs = require("node:fs/promises");
       .locator(".teaching-record")
       .filter({
         has: page.getByRole("heading", {
-          name: "公開確認・江戸幕府",
+          name: "江戸幕府",
           exact: true,
         }),
       })
@@ -129,6 +145,9 @@ const fs = require("node:fs/promises");
     await record
       .getByText("生徒AIが受けたテストと、説明の根拠", { exact: true })
       .click();
+    await record.getByLabel("AIテストの回").selectOption("1");
+    await expect(record.locator(".ai-test-answer.not_observed")).toHaveCount(2);
+    await record.getByLabel("AIテストの回").selectOption("2");
     await expect(record.locator(".ai-test-answer.observed")).toHaveCount(3);
     await record
       .getByLabel("確認できたこと・次に確かめたいこと")
@@ -212,7 +231,7 @@ const fs = require("node:fs/promises");
     await page.setViewportSize({ width: 375, height: 812 });
     await login("生徒A");
     await expect(
-      page.getByRole("button", { name: "例を入れて試す" }),
+      page.getByRole("button", { name: "会話例を入力する" }),
     ).toBeInViewport();
     if (
       !(await page.evaluate(
@@ -224,12 +243,13 @@ const fs = require("node:fs/promises");
       path: "site-evidence/studio-mobile.png",
       fullPage: true,
     });
+    await page.getByRole("button", { name: /^AIのテスト/ }).click();
     if (api.length || external.length)
       throw new Error("Unexpected API or external request");
     const proof = {
       url,
       status: 200,
-      flow: "teach/ai-test/reflect/reteach/growth/teacher-evidence/check/review/release/tutor",
+      flow: "conversation/questions/test-rounds/frozen-history/continue-teaching/teacher-evidence/check/review/release/tutor",
       mobile_width: 375,
       bundled_rounded_font: true,
       api_requests: 0,
